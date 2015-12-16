@@ -53,6 +53,10 @@ class DefaultLocationsTest extends FunSuite {
         (doSomething.x := S3DataLocation(doSomething.s3Output / doSomething.x.label)) :: *[AnyDenotation]
       )
     }
+
+    assert {
+      (doSomething.input.keys.types map doSomething.defaultS3Location) === doSomething.defaultOutputS3Location
+    }
   }
 
   test("default parametric S3 locations") {

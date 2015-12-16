@@ -5,7 +5,7 @@ import ohnosequences.cosas._, types._, fns._, klists._
 
 class defaultS3LocationForTask[T <: AnyTask](val task: T) extends DepFn1[
   AnyData,
-  AnyDenotation { type Value = S3DataLocation}
+  AnyDenotation { type Value = S3DataLocation }
 ]
 {
 

@@ -3,6 +3,7 @@ package era7.projects
 import java.net.URL
 import ohnosequences.awstools.s3._
 import ohnosequences.datasets._
+import ohnosequences.cosas._, types._, fns._, klists._
 
 /*
   This namespace contains github-related constants.
@@ -78,6 +79,19 @@ trait AnyTask {
     This is a depfn which when applied on data: `task.defaultS3Location(d)` yields the default S3 location for `d`. You can use it for building data Loquat data mappings, for example, by mapping over the types of the input/output records.
   */
   case object defaultS3Location extends defaultS3LocationForTask(this)
+
+  def defaultOutputS3Location[
+    O <: AnyKList { type Bound = AnyDenotation { type Value = S3DataLocation } }
+  ](implicit
+    mapper: AnyApp2At[
+      mapKList[defaultS3Location.type, AnyDenotation { type Value = S3DataLocation }],
+      defaultS3Location.type,
+      Input#Keys#Types
+    ] { type Y = O }
+  )
+  : O =
+    mapper(defaultS3Location, input.keys.types)
+    // (input.keys.types: Input#Keys#Types) map defaultS3Location
 }
 /*
   This is a helper constructor for doing `case object doSometing extends Task(project)(name)`
