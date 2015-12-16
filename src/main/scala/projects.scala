@@ -63,7 +63,7 @@ trait AnyTask {
   /*
     ### Input and output
 
-    Both inputs and outputs are records of `AnyData`. Normally you would define a task as an `object`, with nested `object`s for the input and output. Then you just need to set `type Input = input.type`, `type Output = output.type`.
+    Both inputs and outputs are records of `AnyData`. Normally you would define a task as an `object`, with nested `object`s for the input and output. Then you just need to set the corresponding types and values.
   */
   type Input <: AnyDataSet
   val input: Input
@@ -74,16 +74,15 @@ trait AnyTask {
   // NOTE in a future better world we could use this
   lazy val branch = name
 
+  /*
+    This is a depfn which when applied on data: `task.defaultS3Location(d)` yields the default S3 location for `d`. You can use it for building data Loquat data mappings, for example, by mapping over the types of the input/output records.
+  */
   case object defaultS3Location extends defaultS3LocationForTask(this)
 }
 /*
-  This is a helper constructor for doing `case object doSometing extends Task(project)`. The name of the task will be that of the object.
+  This is a helper constructor for doing `case object doSometing extends Task(project)(name)`
 */
 abstract class Task[P <: AnyProject](val project: P)(val name: String) extends AnyTask {
 
   type Project = P
-
-  // lazy val name: String = toString
-
-
 }
