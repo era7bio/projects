@@ -1,4 +1,4 @@
-package era7bio.projects
+package era7.projects
 
 import java.net.URL
 import ohnosequences.awstools.s3._
@@ -9,14 +9,14 @@ import ohnosequences.datasets._
 */
 case object github {
 
-  val org: String = "era7bio"
+  lazy val org: String = "era7bio"
 }
 /*
   This namespace contains S3-related constants.
 */
 case object s3 {
 
-  val bucket: String = "era7p"
+  lazy val bucket: String = "era7p"
 }
 
 trait AnyProject {
@@ -37,7 +37,7 @@ trait AnyProject {
 
     The S3 namespaces for the project and its input and output.
   */
-  lazy val s3       : S3Folder = S3Folder(s3.bucket, name)
+  lazy val s3       : S3Folder = S3Folder(era7.projects.s3.bucket, name)
   lazy val s3Input  : S3Folder = s3 / "data" / "in"  /
   lazy val s3Output : S3Folder = s3 / "data" / "out" /
 
@@ -73,11 +73,17 @@ trait AnyTask {
 
   // NOTE in a future better world we could use this
   lazy val branch = name
+
+  case object defaultS3Location extends defaultS3LocationForTask(this)
 }
 /*
   This is a helper constructor for doing `case object doSometing extends Task(project)`. The name of the task will be that of the object.
 */
-abstract class Task[P <: AnyProject](val project: P) extends AnyTask {
+abstract class Task[P <: AnyProject](val project: P)(val name: String) extends AnyTask {
 
   type Project = P
+
+  // lazy val name: String = toString
+
+
 }
