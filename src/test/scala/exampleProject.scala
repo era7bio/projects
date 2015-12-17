@@ -11,9 +11,8 @@ case object preparePaellaTasks extends ProjectTasks(preparePaella)(
   buySeafood  :×: |[AnyTask]
 )
 
-case object ingredient extends AnyDataType
-case object rice    extends Data(ingredient, "La Fallera")
-case object seafood extends Data(ingredient, "Preparado de Paella Pescanova")
+case object rice    extends Data("La Fallera")
+case object seafood extends Data("Preparado de Paella Pescanova")
 
 case object buyRice extends Task(preparePaella)(new java.util.Date("2016-02-03")) {
 
