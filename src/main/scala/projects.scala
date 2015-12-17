@@ -3,6 +3,7 @@ package era7bio.projects
 import java.net.URL
 import ohnosequences.awstools.s3._
 import ohnosequences.datasets._
+import ohnosequences.cosas._, types._, klists._, records._, fns._
 
 /*
   This namespace contains github-related constants.
@@ -51,7 +52,7 @@ abstract class Project(val name: String) extends AnyProject
 
   A task is part of a project, and has as input and output a set of data.
 */
-trait AnyTask {
+trait AnyTask extends AnyType {
 
   type Project <: AnyProject
   val project: Project
@@ -73,11 +74,42 @@ trait AnyTask {
 
   // NOTE in a future better world we could use this
   lazy val branch = name
+
+  val deadline: java.util.Date
 }
 /*
   This is a helper constructor for doing `case object doSometing extends Task(project)`. The name of the task will be that of the object.
 */
-abstract class Task[P <: AnyProject](val project: P) extends AnyTask {
+abstract class Task[P <: AnyProject](val project: P)(val deadline: java.util.Date) extends AnyTask {
 
   type Project = P
 }
+
+sealed trait AnyTaskState
+case object Specified extends AnyTaskState {
+
+  def start   : Started.type    = Started
+  def cancel  : Cancelled.type  = Cancelled
+  def expire  : Expired.type    = Expired
+}
+// TODO assigned? to someone?
+case object Started   extends AnyTaskState {
+
+  def fail      : Failed.type     = Failed
+  def expire    : Expired.type    = Expired
+  def complete  : Completed.type  = Completed
+}
+case object Failed    extends AnyTaskState
+case object Cancelled extends AnyTaskState
+case object Expired   extends AnyTaskState
+case object Completed extends AnyTaskState
+
+
+
+
+abstract class ProjectTasks[Ks <: AnyProductType { type Types <: AnyKList { type Bound <: AnyTask } }](
+  val tasks: Ks
+)(implicit
+  noDuplicates: noDuplicates isTrueOn Ks#Types
+)
+extends RecordType(tasks)
