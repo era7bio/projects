@@ -1,8 +1,11 @@
 Nice.scalaProject
 
 name          := "projects"
-organization  := "era7bio"
+organization  := "era7"
 description   := "projects project"
+
+// the org name differs on github:
+GithubRelease.repo := s"era7bio/${name.value}"
 
 bucketSuffix  := "era7.com"
 
