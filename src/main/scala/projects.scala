@@ -54,6 +54,8 @@ abstract class Project(val name: String) extends AnyProject
 */
 trait AnyTask extends AnyType {
 
+  type Raw = AnyTaskState
+
   type Project <: AnyProject
   val project: Project
 
