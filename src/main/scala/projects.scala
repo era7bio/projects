@@ -1,4 +1,4 @@
-package era7bio.projects
+package era7.projects
 
 import java.net.URL
 import ohnosequences.awstools.s3._
@@ -58,7 +58,9 @@ trait AnyTask extends AnyType {
   val project: Project
 
   val name: String
-  lazy val fullName: String   = s"${project.name}.${name}"
+  lazy val fullName : String  = s"${project.name}.${name}"
+  lazy val label    : String  = fullName
+
   lazy val s3Output: S3Folder = project.s3Output / name /
 
   /*
@@ -83,6 +85,8 @@ trait AnyTask extends AnyType {
 abstract class Task[P <: AnyProject](val project: P)(val deadline: java.util.Date) extends AnyTask {
 
   type Project = P
+
+  lazy val name: String = toString
 }
 
 sealed trait AnyTaskState
@@ -107,7 +111,10 @@ case object Completed extends AnyTaskState
 
 
 
-abstract class ProjectTasks[Ks <: AnyProductType { type Types <: AnyKList { type Bound <: AnyTask } }](
+abstract class ProjectTasks[P <: AnyProject, Ks <: AnyProductType { type Types <: AnyKList { type Bound <: AnyTask } }](
+  val project: P
+)
+(
   val tasks: Ks
 )(implicit
   noDuplicates: noDuplicates isTrueOn Ks#Types
