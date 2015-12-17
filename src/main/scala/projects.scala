@@ -111,8 +111,6 @@ case object Expired   extends AnyTaskState
 case object Completed extends AnyTaskState
 
 
-
-
 abstract class ProjectTasks[P <: AnyProject, Ks <: AnyProductType { type Types <: AnyKList { type Bound <: AnyTask } }](
   val project: P
 )
