@@ -14,7 +14,7 @@ case object preparePaellaTasks extends ProjectTasks(preparePaella)(
 case object rice    extends Data("La Fallera")
 case object seafood extends Data("Preparado de Paella Pescanova")
 
-case object buyRice extends Task(preparePaella)(new java.util.Date("2016-02-03")) {
+case object buyRice extends Task(preparePaella)(new java.util.Date()) {
 
   // TODO if this style works OK, we can create the record type at the level of AnyTask
   type Input  = RecordType[|[AnyData]]
@@ -24,7 +24,7 @@ case object buyRice extends Task(preparePaella)(new java.util.Date("2016-02-03")
   val output  = new RecordType(rice :×: |[AnyData])
 }
 
-case object buySeafood extends Task(preparePaella)(new java.util.Date("2016-02-03")) {
+case object buySeafood extends Task(preparePaella)(new java.util.Date()) {
 
   type Input  = RecordType[|[AnyData]]
   val input   = new RecordType(|[AnyData])
@@ -41,3 +41,22 @@ case object ProjectState {
     (buySeafood := Specified) :: *[AnyDenotation]
   )
 }
+
+abstract class GenericTasksTests[
+  P <: AnyProject,
+  Ks <: AnyProductType { type Types <: AnyKList { type Bound <: AnyTask } },
+  PT <: ProjectTasks[P, Ks]
+](val pt: PT) extends org.scalatest.FunSuite {
+
+  test("dummy test with tasks") {
+
+    println { pt.keys.types.asList toString }
+  }
+}
+
+class buh extends GenericTasksTests[
+  preparePaella.type,
+  buyRice.type     :×:
+  buySeafood.type  :×: |[AnyTask],
+  preparePaellaTasks.type
+](preparePaellaTasks)
