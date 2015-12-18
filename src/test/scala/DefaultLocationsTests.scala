@@ -12,9 +12,9 @@ case object example {
 
   case object buh extends era7.projects.Project("buh")
 
-  case object doSomething extends Task(buh)("doSomething") {
+  case object doSomething extends Task(buh)(new java.util.Date) {
 
-    case object x extends FileData("x")(fileType.txt)
+    case object x extends FileData("x")("txt")
 
     case object Input extends DataSet(x :×: |[AnyData])
     type Input = Input.type
@@ -23,9 +23,9 @@ case object example {
     val output = input
   }
 
-  case class doSomethingParam(b: String) extends Task(buh)(s"doSomething.${b}") {
+  case class doSomethingParam(b: String) extends Task(buh)(new java.util.Date) {
 
-    case object x extends FileData("x")(fileType.txt)
+    case object x extends FileData("x")("txt")
 
     case object Input extends DataSet(x :×: |[AnyData])
     type Input = Input.type
@@ -50,7 +50,7 @@ class DefaultLocationsTest extends FunSuite {
 
     assert {
       (doSomething.input.keys.types map doSomething.defaultS3Location) === (
-        (doSomething.x := S3DataLocation(doSomething.s3Output / doSomething.x.label)) :: *[AnyDenotation]
+        (doSomething.x := S3Resource(doSomething.s3Output / doSomething.x.label)) :: *[AnyDenotation]
       )
     }
 

@@ -85,10 +85,10 @@ trait AnyTask extends AnyType {
   case object defaultS3Location extends defaultS3LocationForTask(this)
 
   def defaultOutputS3Location[
-    O <: AnyKList { type Bound = AnyDenotation { type Value = S3DataLocation } }
+    O <: AnyKList { type Bound = AnyDenotation { type Value = S3Resource } }
   ](implicit
     mapper: AnyApp2At[
-      mapKList[defaultS3Location.type, AnyDenotation { type Value = S3DataLocation }],
+      mapKList[defaultS3Location.type, AnyDenotation { type Value = S3Resource }],
       defaultS3Location.type,
       Input#Keys#Types
     ] { type Y = O }
