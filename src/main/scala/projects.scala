@@ -122,13 +122,18 @@ case object Started   extends AnyTaskState {
 
   def fail      : Failed.type     = Failed
   def expire    : Expired.type    = Expired
+  def review    : InReview.type   = InReview
+  // TODO without review? kinda weird
   def complete  : Completed.type  = Completed
 }
 case object Failed    extends AnyTaskState
 case object Cancelled extends AnyTaskState
 case object Expired   extends AnyTaskState
-case object Completed extends AnyTaskState
+case object InReview  extends AnyTaskState {
 
+  def complete: Completed.type = Completed
+}
+case object Completed extends AnyTaskState
 
 abstract class ProjectTasks[P <: AnyProject, Ks <: AnyProductType { type Types <: AnyKList { type Bound <: AnyTask } }](
   val project: P
