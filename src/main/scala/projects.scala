@@ -10,14 +10,14 @@ import ohnosequences.cosas._, types._, klists._, records._, fns._
 */
 case object github {
 
-  val org: String = "era7bio"
+  lazy val org: String = "era7bio"
 }
 /*
   This namespace contains S3-related constants.
 */
 case object s3 {
 
-  val bucket: String = "era7p"
+  lazy val bucket: String = "era7p"
 }
 
 trait AnyProject {
@@ -38,7 +38,7 @@ trait AnyProject {
 
     The S3 namespaces for the project and its input and output.
   */
-  lazy val s3       : S3Folder = S3Folder(s3.bucket, name)
+  lazy val s3       : S3Folder = S3Folder(era7.projects.s3.bucket, name)
   lazy val s3Input  : S3Folder = s3 / "data" / "in"  /
   lazy val s3Output : S3Folder = s3 / "data" / "out" /
 
@@ -68,7 +68,7 @@ trait AnyTask extends AnyType {
   /*
     ### Input and output
 
-    Both inputs and outputs are records of `AnyData`. Normally you would define a task as an `object`, with nested `object`s for the input and output. Then you just need to set `type Input = input.type`, `type Output = output.type`.
+    Both inputs and outputs are records of `AnyData`. Normally you would define a task as an `object`, with nested `object`s for the input and output. Then you just need to set the corresponding types and values.
   */
   type Input <: AnyDataSet
   val input: Input
@@ -79,11 +79,30 @@ trait AnyTask extends AnyType {
   // NOTE in a future better world we could use this
   lazy val branch = name
 
+  /*
+    This is a depfn which when applied on data: `task.defaultS3Location(d)` yields the default S3 location for `d`. You can use it for building data Loquat data mappings, for example, by mapping over the types of the input/output records.
+  */
+  case object defaultS3Location extends defaultS3LocationForTask(this)
+
+  def defaultOutputS3Location[
+    O <: AnyKList { type Bound = AnyDenotation { type Value = S3Resource } }
+  ](implicit
+    mapper: AnyApp2At[
+      mapKList[defaultS3Location.type, AnyDenotation { type Value = S3Resource }],
+      defaultS3Location.type,
+      Input#Keys#Types
+    ] { type Y = O }
+  )
+  : O =
+    mapper(defaultS3Location, input.keys.types)
+    // (input.keys.types: Input#Keys#Types) map defaultS3Location
+
   val deadline: java.util.Date
 }
 /*
-  This is a helper constructor for doing `case object doSometing extends Task(project)`. The name of the task will be that of the object.
+  This is a helper constructor for doing `case object doSometing extends Task(project)(name)`
 */
+
 abstract class Task[P <: AnyProject](val project: P)(val deadline: java.util.Date) extends AnyTask {
 
   type Project = P
