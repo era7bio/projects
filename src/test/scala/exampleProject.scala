@@ -37,8 +37,9 @@ case object ProjectState {
 
   // Now imagine that I already got my rice, but no seafood yet
   val uh = preparePaellaTasks := (
-    (buyRice    := Completed) ::
-    (buySeafood := Specified) :: *[AnyDenotation]
+    ( buyRice     := (Completed :: List(*[AnyDenotation]) :: List(buyRice.defaultOutputS3Location) :: *[Any]) )   ::
+    ( buySeafood  := (Specified :: List(*[AnyDenotation]) :: List(buySeafood.defaultOutputS3Location) :: *[Any]) ) ::
+    *[AnyDenotation]
   )
 }
 
@@ -50,7 +51,7 @@ abstract class GenericTasksTests[
 
   test("dummy test with tasks") {
 
-    println { pt.keys.types.asList toString }
+    // println { pt.keys.types.asList toString }
   }
 }
 

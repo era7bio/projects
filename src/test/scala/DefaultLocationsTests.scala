@@ -33,13 +33,6 @@ case object example {
     type Output = input.type
     val output = input
   }
-
-  def lll(x: String) = {
-
-    val a = doSomethingParam(x); import a._
-
-    a.input.keys.types map a.defaultS3Location
-  }
 }
 
 class DefaultLocationsTest extends FunSuite {
@@ -57,10 +50,23 @@ class DefaultLocationsTest extends FunSuite {
     assert {
       (doSomething.input.keys.types map doSomething.defaultS3Location) === doSomething.defaultOutputS3Location
     }
-  }
 
-  test("default parametric S3 locations") {
+    val uh = doSomething.defaultOutputS3Location; val pref = new insertAfter(doSomething.s3Output.key, "buh")
 
-    println { List("a", "b", "c") map lll _}
+    import pref._
+
+    val z = uh map pref
+
+    val samples = List("hola", "scalac", "que tal")
+
+    val s3PerSample = samples map {
+      s => {
+        val pref = new insertAfter(doSomething.s3Output.key, s);
+        import pref._
+        uh map pref
+      }
+    }
+
+    println { s3PerSample }
   }
 }
