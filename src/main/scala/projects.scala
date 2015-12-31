@@ -42,6 +42,7 @@ trait AnyProject {
   lazy val s3Input  : S3Folder = s3 / "data" / "in"  /
   lazy val s3Output : S3Folder = s3 / "data" / "out" /
 
+
   // TODO one role per project, created when initialized
   // lazy val role: Role = projects
 }
@@ -54,7 +55,7 @@ abstract class Project(val name: String) extends AnyProject
 */
 trait AnyTask extends AnyType {
 
-  type Raw = AnyTaskState
+  type Raw = AnyTaskState :: List[Input#Raw] :: List[Output#Raw] :: *[Any]
 
   type Project <: AnyProject
   val project: Project
@@ -83,19 +84,18 @@ trait AnyTask extends AnyType {
     This is a depfn which when applied on data: `task.defaultS3Location(d)` yields the default S3 location for `d`. You can use it for building data Loquat data mappings, for example, by mapping over the types of the input/output records.
   */
   case object defaultS3Location extends defaultS3LocationForTask(this)
-
+  
   def defaultOutputS3Location[
-    O <: AnyKList { type Bound = AnyDenotation { type Value = S3Resource } }
+    O <: Output#Raw
   ](implicit
     mapper: AnyApp2At[
       mapKList[defaultS3Location.type, AnyDenotation { type Value = S3Resource }],
       defaultS3Location.type,
-      Input#Keys#Types
+      Output#Keys#Types
     ] { type Y = O }
   )
   : O =
-    mapper(defaultS3Location, input.keys.types)
-    // (input.keys.types: Input#Keys#Types) map defaultS3Location
+    mapper(defaultS3Location, output.keys.types)
 
   val deadline: java.util.Date
 }
@@ -110,7 +110,13 @@ abstract class Task[P <: AnyProject](val project: P)(val deadline: java.util.Dat
   lazy val name: String = toString
 }
 
+case class TaskSyntax[T <: AnyTask](val task: T) extends AnyVal {
+
+  // def
+}
+
 sealed trait AnyTaskState
+
 case object Specified extends AnyTaskState {
 
   def start   : Started.type    = Started
