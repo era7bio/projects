@@ -1,5 +1,6 @@
 package era7.projects.test
 
+import java.time._
 import era7.projects._
 import ohnosequences.datasets._
 import ohnosequences.cosas._, records._, types._, klists._
@@ -14,8 +15,8 @@ case object preparePaellaTasks extends ProjectTasks(preparePaella)(
 case object rice    extends Data("La Fallera")
 case object seafood extends Data("Preparado de Paella Pescanova")
 
-case object buyRice extends Task(preparePaella)(noData)(rice :×: |[AnyData])(new java.util.Date())
-case object buySeafood extends Task(preparePaella)(noData)(seafood :×: |[AnyData])(new java.util.Date())
+case object buyRice extends Task(preparePaella)(noData)(rice :×: |[AnyData])(LocalDate.of(2016,3,2))
+case object buySeafood extends Task(preparePaella)(noData)(seafood :×: |[AnyData])(LocalDate.of(2016,3,2))
 
 case object projectState {
 
