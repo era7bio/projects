@@ -1,6 +1,7 @@
 package era7.projects
 
 import java.net.URL
+import java.time._
 import ohnosequences.awstools.s3._
 import ohnosequences.datasets._
 import ohnosequences.cosas._, types._, klists._, records._, fns._
@@ -100,10 +101,10 @@ trait AnyTask extends AnyType {
   : O =
     mapper(defaultS3Location, output.keys.types)
 
-  val deadline: java.util.Date
+  val deadline: LocalDate
 }
 
-// abstract class Task[P <: AnyProject](val project: P)(val deadline: java.util.Date) extends AnyTask {
+// abstract class Task[P <: AnyProject](val project: P)(val deadline: LocalDate) extends AnyTask {
 //
 //   type Project = P
 //
@@ -128,7 +129,7 @@ class Task[
 )(
   val outputData: O
 )(
-  val deadline: java.util.Date
+  val deadline: LocalDate
 )(
   implicit
     proof1: noDuplicates isTrueOn I#Types,

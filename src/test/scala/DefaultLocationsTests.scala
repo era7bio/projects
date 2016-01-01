@@ -1,5 +1,7 @@
 package era7.projects.test
 
+import java.time._
+
 import org.scalatest.FunSuite
 
 import ohnosequences.datasets._
@@ -13,7 +15,7 @@ case object example {
 
   case object buh extends era7.projects.Project("buh")
 
-  case object doSomething extends Task(buh)(x :×: |[AnyData])(x :×: |[AnyData])(new java.util.Date)
+  case object doSomething extends Task(buh)(x :×: |[AnyData])(x :×: |[AnyData])(LocalDate.of(2016,3,2))
 }
 
 class DefaultLocationsTest extends FunSuite {
