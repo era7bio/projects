@@ -50,20 +50,20 @@ class DefaultLocationsTest extends FunSuite {
     assert {
       (doSomething.input.keys.types map doSomething.defaultS3Location) === doSomething.defaultOutputS3Location
     }
+  }
 
-    val uh = doSomething.defaultOutputS3Location; val pref = new insertAfter(doSomething.s3Output.key, "buh")
+  test("can map over default locations") {
 
-    import pref._
-
-    val z = uh map pref
-
-    val samples = List("hola", "scalac", "que tal")
+    // NOTE just something which serves as a classifier for different denotations of the same resource
+    val samples = Set("hola", "scalac", "que tal")
 
     val s3PerSample = samples map {
       s => {
-        val pref = new insertAfter(doSomething.s3Output.key, s);
-        import pref._
-        uh map pref
+        
+        val addSamplePrefix = doSomething.defaultLocationWithQualifier(s)
+        import addSamplePrefix._
+
+        doSomething.defaultOutputS3Location map addSamplePrefix
       }
     }
 

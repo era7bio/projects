@@ -84,7 +84,10 @@ trait AnyTask extends AnyType {
     This is a depfn which when applied on data: `task.defaultS3Location(d)` yields the default S3 location for `d`. You can use it for building data Loquat data mappings, for example, by mapping over the types of the input/output records.
   */
   case object defaultS3Location extends defaultS3LocationForTask(this)
-  
+
+  /* the returned depfn will let you add a qualifier after the standard output path for this task. See the tests for an example of its use */
+  def defaultLocationWithQualifier(qual: String): insertAfter = insertAfter(s3Output.key, qual)
+
   def defaultOutputS3Location[
     O <: Output#Raw
   ](implicit
