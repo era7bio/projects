@@ -9,30 +9,11 @@ import era7.projects._
 case object example {
 
   case class Sample(id: String)
+  case object x extends FileData("x")("txt")
 
   case object buh extends era7.projects.Project("buh")
 
-  case object doSomething extends Task(buh)(new java.util.Date) {
-
-    case object x extends FileData("x")("txt")
-
-    case object Input extends DataSet(x :×: |[AnyData])
-    type Input = Input.type
-    val input = Input
-    type Output = input.type
-    val output = input
-  }
-
-  case class doSomethingParam(b: String) extends Task(buh)(new java.util.Date) {
-
-    case object x extends FileData("x")("txt")
-
-    case object Input extends DataSet(x :×: |[AnyData])
-    type Input = Input.type
-    val input = Input
-    type Output = input.type
-    val output = input
-  }
+  case object doSomething extends Task(buh)(x :×: |[AnyData])(x :×: |[AnyData])(new java.util.Date)
 }
 
 class DefaultLocationsTest extends FunSuite {
@@ -43,7 +24,7 @@ class DefaultLocationsTest extends FunSuite {
 
     assert {
       (doSomething.input.keys.types map doSomething.defaultS3Location) === (
-        (doSomething.x := S3Resource(doSomething.s3Output / doSomething.x.label)) :: *[AnyDenotation]
+        (x := S3Resource(doSomething.s3Output / x.label)) :: *[AnyDenotation]
       )
     }
 
@@ -59,7 +40,7 @@ class DefaultLocationsTest extends FunSuite {
 
     val s3PerSample = samples map {
       s => {
-        
+
         val addSamplePrefix = doSomething.defaultLocationWithQualifier(s)
         import addSamplePrefix._
 

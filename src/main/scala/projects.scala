@@ -102,21 +102,51 @@ trait AnyTask extends AnyType {
 
   val deadline: java.util.Date
 }
-/*
-  This is a helper constructor for doing `case object doSometing extends Task(project)(name)`
-*/
 
-abstract class Task[P <: AnyProject](val project: P)(val deadline: java.util.Date) extends AnyTask {
+// abstract class Task[P <: AnyProject](val project: P)(val deadline: java.util.Date) extends AnyTask {
+//
+//   type Project = P
+//
+//   lazy val name: String = toString
+// }
+
+/*
+  This is a helper constructor for doing  something like
+
+  ``` scala
+  case object doSomething extends Task(project)(input)(output)(date)`
+  ```
+*/
+class Task[
+  P <: AnyProject,
+  I <: AnyProductType { type Types <: AnyKList.Of[AnyData] },
+  O <: AnyProductType { type Types <: AnyKList.Of[AnyData] }
+](
+  val project: P
+)(
+  val inputData: I
+)(
+  val outputData: O
+)(
+  val deadline: java.util.Date
+)(
+  implicit
+    proof1: noDuplicates isTrueOn I#Types,
+    proof2: noDuplicates isTrueOn O#Types
+)
+extends AnyTask {
 
   type Project = P
+
+  type Input = DataSet[I]
+  lazy val input: Input = new DataSet(inputData) {}
+
+  type Output = DataSet[O]
+  lazy val output: Output = new DataSet(outputData) {}
 
   lazy val name: String = toString
 }
 
-case class TaskSyntax[T <: AnyTask](val task: T) extends AnyVal {
-
-  // def
-}
 
 sealed trait AnyTaskState
 

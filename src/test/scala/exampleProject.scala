@@ -14,24 +14,19 @@ case object preparePaellaTasks extends ProjectTasks(preparePaella)(
 case object rice    extends Data("La Fallera")
 case object seafood extends Data("Preparado de Paella Pescanova")
 
-case object buyRice extends Task(preparePaella)(new java.util.Date()) {
+case object buyRice extends Task(preparePaella)(noData)(rice :×: |[AnyData])(new java.util.Date())
+//
+// case object buyRice extends Task(preparePaella)(new java.util.Date()) {
+//
+//   // TODO if this style works OK, we can create the record type at the level of AnyTask
+//   type Input  = RecordType[|[AnyData]]
+//   val input   = new RecordType(|[AnyData])
+//
+//   type Output = RecordType[rice.type :×: |[AnyData]]
+//   val output  = new RecordType(rice :×: |[AnyData])
+// }
 
-  // TODO if this style works OK, we can create the record type at the level of AnyTask
-  type Input  = RecordType[|[AnyData]]
-  val input   = new RecordType(|[AnyData])
-
-  type Output = RecordType[rice.type :×: |[AnyData]]
-  val output  = new RecordType(rice :×: |[AnyData])
-}
-
-case object buySeafood extends Task(preparePaella)(new java.util.Date()) {
-
-  type Input  = RecordType[|[AnyData]]
-  val input   = new RecordType(|[AnyData])
-
-  type Output = RecordType[seafood.type :×: |[AnyData]]
-  val output  = new RecordType(seafood :×: |[AnyData])
-}
+case object buySeafood extends Task(preparePaella)(noData)(seafood :×: |[AnyData])(new java.util.Date())
 
 case object ProjectState {
 
