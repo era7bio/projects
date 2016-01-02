@@ -202,15 +202,16 @@ case object getState extends DepFn1[AnyDenotation, (AnyTask, AnyTaskState)] {
   : AnyApp1At[this.type, T := V] { type Y = (T,V#Head) } =
     this at { tv: T := V => (tv.tpe, tv.value.head) }
 }
-//
-// case object taskDeadlineOK extends DepFn1[(AnyTask, TaskState), Boolean] {
-//
-//   implicit def default[T <: AnyTask, V <: T#Raw]
-//   : AnyApp1At[taskDeadlineOK.type, T := V] { type Y = Boolean } =
-//     App1 {
-//       tv: T := V => tv.value.head match {
-//           case Failed | Cancelled | Expired | Completed => true
-//           case Specified | InReview |Started            => tv.tpe.deadlinePassed
-//         }
-//     }
-// }
+
+// TODO return the task if not or somethikn similar
+case object taskDeadlineOK extends DepFn1[AnyDenotation, Boolean] {
+
+  implicit def default[T <: AnyTask, V <: T#Raw]
+  : AnyApp1At[taskDeadlineOK.type, T := V] { type Y = Boolean } =
+    App1 {
+      tv: T := V => tv.value.head match {
+          case Failed | Cancelled | Expired | Completed => true
+          case Specified | InReview |Started            => tv.tpe.deadlinePassed
+        }
+    }
+}

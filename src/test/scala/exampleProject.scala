@@ -59,12 +59,17 @@ abstract class GenericTasksTests[
   test("dummy test with tasks") {}
 }
 
+class ExampleProjectTests extends org.scalatest.FunSuite {
 
-// class preparePaellaDefaultTests extends GenericProjectStateTest(preparePaella)(preparePaellaTasks.keys)(preparePaellaTasks)(projectState.current)
+  test("deadlines are still in the future") {
 
-object uhoh {
+    assertResult(true) {
 
-  val uh = projectState.current.value.head.isDeadlineOK
+      val zzz: List[Boolean] = (projectState.current.value map taskDeadlineOK).asList
 
-  val aaaa = projectState.current.value map getState
+      zzz.foldLeft(true)(_ && _)
+    }
+  }
 }
+
+class preparePaellaDefaultTests extends GenericProjectStateTest(preparePaella)(preparePaellaTasks.keys)(preparePaellaTasks)(projectState.current)
