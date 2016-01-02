@@ -5,5 +5,6 @@ import ohnosequences.datasets._
 
 package object projects {
 
+  type NoData = |[AnyData]
   val noData: |[AnyData] = |[AnyData]
 }

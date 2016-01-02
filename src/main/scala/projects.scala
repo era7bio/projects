@@ -43,7 +43,6 @@ trait AnyProject {
   lazy val s3Input  : S3Folder = s3 / "data" / "in"  /
   lazy val s3Output : S3Folder = s3 / "data" / "out" /
 
-
   // TODO one role per project, created when initialized
   // lazy val role: Role = projects
 }
@@ -72,44 +71,32 @@ trait AnyTask extends AnyType {
 
     Both inputs and outputs are records of `AnyData`. Normally you would define a task as an `object`, with nested `object`s for the input and output. Then you just need to set the corresponding types and values.
   */
-  type Input <: AnyDataSet
+  type Input <: AnyProductType { type Types <: AnyKList.Of[AnyData] }
   val input: Input
 
-  type Output <: AnyDataSet
+  type Output <: AnyProductType { type Types <: AnyKList.Of[AnyData] }
   val output: Output
 
   // NOTE in a future better world we could use this
   lazy val branch = name
 
-  /*
-    This is a depfn which when applied on data: `task.defaultS3Location(d)` yields the default S3 location for `d`. You can use it for building data Loquat data mappings, for example, by mapping over the types of the input/output records.
-  */
-  case object defaultS3Location extends defaultS3LocationForTask(this)
-
-  /* the returned depfn will let you add a qualifier after the standard output path for this task. See the tests for an example of its use */
-  def defaultLocationWithQualifier(qual: String): insertAfter = insertAfter(s3Output.key, qual)
-
-  def defaultOutputS3Location[
-    O <: Output#Raw
-  ](implicit
-    mapper: AnyApp2At[
-      mapKList[defaultS3Location.type, AnyDenotation { type Value = S3Resource }],
-      defaultS3Location.type,
-      Output#Keys#Types
-    ] { type Y = O }
-  )
-  : O =
-    mapper(defaultS3Location, output.keys.types)
-
   val deadline: LocalDate
+
+  def deadlinePassed: Boolean = deadline.isAfter(LocalDate.now)
 }
 
-// abstract class Task[P <: AnyProject](val project: P)(val deadline: LocalDate) extends AnyTask {
-//
-//   type Project = P
-//
-//   lazy val name: String = toString
-// }
+case object AnyTask {
+
+  implicit def denotationSyntax[T <: AnyTask, V <: T#Raw](td: T := V): TaskDenotationSyntax[T,V] =
+    TaskDenotationSyntax(td)
+}
+case class TaskDenotationSyntax[T <: AnyTask, V <: T#Raw](val td: T := V) {
+
+  def isDeadlineOK: Boolean = td.value.head match {
+    case Failed | Cancelled | Expired | Completed => true
+    case Specified | InReview |Started            => td.tpe.deadlinePassed
+  }
+}
 
 /*
   This is a helper constructor for doing  something like
@@ -139,15 +126,36 @@ extends AnyTask {
 
   type Project = P
 
-  type Input = DataSet[I]
-  lazy val input: Input = new DataSet(inputData) {}
+  type Input = I
+  lazy val input: Input = inputData
 
-  type Output = DataSet[O]
-  lazy val output: Output = new DataSet(outputData) {}
+  type Output = O
+  lazy val output: Output = outputData
 
   lazy val name: String = toString
 }
 
+
+abstract class Task2[
+  P <: AnyProject
+](
+  val project: P
+)(
+  val deadline: LocalDate
+)
+extends AnyTask {
+
+  type Project = P
+
+  lazy val name: String = toString
+}
+
+
+trait AnyTaskRaw {
+
+  type T <: AnyTask
+  type Inputs = List[Any]
+}
 
 sealed trait AnyTaskState
 
@@ -184,3 +192,25 @@ abstract class ProjectTasks[P <: AnyProject, Ks <: AnyProductType { type Types <
   noDuplicates: noDuplicates isTrueOn Ks#Types
 )
 extends RecordType(tasks)
+
+case object getState extends DepFn1[AnyDenotation, (AnyTask, AnyTaskState)] {
+
+  implicit def default[
+    T <: AnyTask,
+    V <: T#Raw
+  ]
+  : AnyApp1At[this.type, T := V] { type Y = (T,V#Head) } =
+    this at { tv: T := V => (tv.tpe, tv.value.head) }
+}
+//
+// case object taskDeadlineOK extends DepFn1[(AnyTask, TaskState), Boolean] {
+//
+//   implicit def default[T <: AnyTask, V <: T#Raw]
+//   : AnyApp1At[taskDeadlineOK.type, T := V] { type Y = Boolean } =
+//     App1 {
+//       tv: T := V => tv.value.head match {
+//           case Failed | Cancelled | Expired | Completed => true
+//           case Specified | InReview |Started            => tv.tpe.deadlinePassed
+//         }
+//     }
+// }

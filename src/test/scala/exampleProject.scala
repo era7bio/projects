@@ -15,15 +15,35 @@ case object preparePaellaTasks extends ProjectTasks(preparePaella)(
 case object rice    extends Data("La Fallera")
 case object seafood extends Data("Preparado de Paella Pescanova")
 
-case object buyRice extends Task(preparePaella)(noData)(rice :×: |[AnyData])(LocalDate.of(2016,3,2))
-case object buySeafood extends Task(preparePaella)(noData)(seafood :×: |[AnyData])(LocalDate.of(2016,3,2))
+case object buyRice extends Task2(preparePaella)(LocalDate.of(2016,3,2)) {
+
+  type Input  = NoData; val input = noData
+  type Output = rice.type :×: |[AnyData]; val output = rice :×: |[AnyData]
+
+  val outputLocations = List( rice(buyRice.s3Output / rice.label) :: *[AnyDenotation] )
+}
+case object buySeafood extends Task2(preparePaella)(LocalDate.of(2016,3,2)) {
+
+  type Input  = NoData; val input = noData
+  type Output = seafood.type :×: |[AnyData]; val output = seafood :×: |[AnyData]
+
+  val outputLocations = List( seafood(buySeafood.s3Output / seafood.label) :: *[AnyDenotation] )
+}
 
 case object projectState {
 
   // Now imagine that I already got my rice, but no seafood yet
   val current = preparePaellaTasks := {
-    buyRice( Completed :: List(*[AnyDenotation]) :: List(buyRice.defaultOutputS3Location) :: *[Any] )         ::
-    buySeafood( Specified :: List(*[AnyDenotation]) :: List(buySeafood.defaultOutputS3Location) :: *[Any] )   ::
+    buyRice(
+      Completed                 ::
+      List(*[AnyDenotation])    ::
+      buyRice.outputLocations   :: *[Any]
+    ) ::
+    buySeafood(
+      Specified                   ::
+      List(*[AnyDenotation])      ::
+      buySeafood.outputLocations  :: *[Any]
+    ) ::
     *[AnyDenotation]
   }
 }
@@ -36,15 +56,15 @@ abstract class GenericTasksTests[
   PT <: ProjectTasks[P, Ks]
 ](val pt: PT) extends org.scalatest.FunSuite {
 
-  test("dummy test with tasks") {
-
-    // println { pt.keys.types.asList toString }
-  }
+  test("dummy test with tasks") {}
 }
 
-class buh extends GenericTasksTests[
-  preparePaella.type,
-  buyRice.type     :×:
-  buySeafood.type  :×: |[AnyTask],
-  preparePaellaTasks.type
-](preparePaellaTasks)
+
+// class preparePaellaDefaultTests extends GenericProjectStateTest(preparePaella)(preparePaellaTasks.keys)(preparePaellaTasks)(projectState.current)
+
+object uhoh {
+
+  val uh = projectState.current.value.head.isDeadlineOK
+
+  val aaaa = projectState.current.value map getState
+}

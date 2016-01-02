@@ -10,7 +10,7 @@ class defaultS3LocationForTask[T <: AnyTask](val task: T) extends DepFn1[
 ]
 {
 
-  implicit def default[D <: AnyData]: AnyApp1At[this.type, D] { type Y = D := S3Resource } =
+  implicit def default[D <: AnyData]: AnyApp1At[defaultS3LocationForTask[T], D] { type Y = D := S3Resource } =
     App1 { d: D => d := S3Resource(task.s3Output / d.label) }
 }
 
