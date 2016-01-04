@@ -15,19 +15,15 @@ case object preparePaellaTasks extends ProjectTasks(preparePaella)(
 case object rice    extends Data("La Fallera")
 case object seafood extends Data("Preparado de Paella Pescanova")
 
-case object buyRice extends Task2(preparePaella)(LocalDate.of(2016,3,2)) {
+case object buyRice extends Task(preparePaella)(LocalDate.of(2016,3,2)) {
 
   type Input  = NoData; val input = noData
   type Output = rice.type :×: |[AnyData]; val output = rice :×: |[AnyData]
-
-  val outputLocations = List( rice(buyRice.s3Output / rice.label) :: *[AnyDenotation] )
 }
-case object buySeafood extends Task2(preparePaella)(LocalDate.of(2016,3,2)) {
+case object buySeafood extends Task(preparePaella)(LocalDate.of(2016,3,2)) {
 
   type Input  = NoData; val input = noData
   type Output = seafood.type :×: |[AnyData]; val output = seafood :×: |[AnyData]
-
-  val outputLocations = List( seafood(buySeafood.s3Output / seafood.label) :: *[AnyDenotation] )
 }
 
 case object projectState {
@@ -35,14 +31,14 @@ case object projectState {
   // Now imagine that I already got my rice, but no seafood yet
   val current = preparePaellaTasks := {
     buyRice(
-      Completed                 ::
-      List(*[AnyDenotation])    ::
-      buyRice.outputLocations   :: *[Any]
+      Completed                         ::
+      List(*[AnyDenotation])            ::
+      List(buyRice.defaultS3Locations)  :: *[Any]
     ) ::
     buySeafood(
-      Specified                   ::
-      List(*[AnyDenotation])      ::
-      buySeafood.outputLocations  :: *[Any]
+      Specified                           ::
+      List(*[AnyDenotation])              ::
+      List(buySeafood.defaultS3Locations) :: *[Any]
     ) ::
     *[AnyDenotation]
   }

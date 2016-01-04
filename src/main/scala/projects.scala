@@ -55,10 +55,11 @@ abstract class Project(val name: String) extends AnyProject
 */
 trait AnyTask extends AnyType {
 
-  type Raw = AnyTaskState :: List[Input#Raw] :: List[Output#Raw] :: *[Any]
-
   type Project <: AnyProject
   val project: Project
+
+  val deadline: LocalDate
+  def deadlinePassed: Boolean = deadline.isAfter(LocalDate.now)
 
   val name: String
   lazy val fullName : String  = s"${project.name}.${name}"
@@ -77,12 +78,18 @@ trait AnyTask extends AnyType {
   type Output <: AnyProductType { type Types <: AnyKList.Of[AnyData] }
   val output: Output
 
+  type Raw = AnyTaskState :: List[Input#Raw] :: List[Output#Raw] :: *[Any]
+
   // NOTE in a future better world we could use this
   lazy val branch = name
 
-  val deadline: LocalDate
-
-  def deadlinePassed: Boolean = deadline.isAfter(LocalDate.now)
+  def defaultS3Locations[O <: AnyKList { type Bound = AnyDenotation { type Value = S3Resource } }](implicit
+    mapper: AnyApp2At[
+      mapKList[defaultS3LocationForTask[this.type], AnyDenotation { type Value = S3Resource }],
+      defaultS3LocationForTask[this.type], Output#Types
+    ] { type Y = O }
+  )
+  : O = mapper(defaultS3LocationForTask[this.type], output.types)
 }
 
 case object AnyTask {
@@ -102,41 +109,17 @@ case class TaskDenotationSyntax[T <: AnyTask, V <: T#Raw](val td: T := V) {
   This is a helper constructor for doing  something like
 
   ``` scala
-  case object doSomething extends Task(project)(input)(output)(date)`
+  case object doSomething extends Task(project)(date) {
+
+    type Input = NoData
+    val input = noData
+
+    type Output = NoData
+    val output = noData
+  }
   ```
 */
-class Task[
-  P <: AnyProject,
-  I <: AnyProductType { type Types <: AnyKList.Of[AnyData] },
-  O <: AnyProductType { type Types <: AnyKList.Of[AnyData] }
-](
-  val project: P
-)(
-  val inputData: I
-)(
-  val outputData: O
-)(
-  val deadline: LocalDate
-)(
-  implicit
-    proof1: noDuplicates isTrueOn I#Types,
-    proof2: noDuplicates isTrueOn O#Types
-)
-extends AnyTask {
-
-  type Project = P
-
-  type Input = I
-  lazy val input: Input = inputData
-
-  type Output = O
-  lazy val output: Output = outputData
-
-  lazy val name: String = toString
-}
-
-
-abstract class Task2[
+abstract class Task[
   P <: AnyProject
 ](
   val project: P
@@ -148,13 +131,6 @@ extends AnyTask {
   type Project = P
 
   lazy val name: String = toString
-}
-
-
-trait AnyTaskRaw {
-
-  type T <: AnyTask
-  type Inputs = List[Any]
 }
 
 sealed trait AnyTaskState
@@ -200,7 +176,7 @@ case object getState extends DepFn1[AnyDenotation, (AnyTask, AnyTaskState)] {
     V <: T#Raw
   ]
   : AnyApp1At[this.type, T := V] { type Y = (T,V#Head) } =
-    this at { tv: T := V => (tv.tpe, tv.value.head) }
+    getState at { tv: T := V => (tv.tpe, tv.value.head) }
 }
 
 // TODO return the task if not or somethikn similar

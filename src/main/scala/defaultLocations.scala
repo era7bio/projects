@@ -4,13 +4,15 @@ import ohnosequences.datasets._
 import ohnosequences.cosas._, types._, fns._, klists._
 import ohnosequences.awstools.s3._
 
-class defaultS3LocationForTask[T <: AnyTask](val task: T) extends DepFn1[
+case class defaultS3LocationForTask[T <: AnyTask]() extends DepFn1[
   AnyData,
   AnyDenotation { type Value = S3Resource }
 ]
-{
 
-  implicit def default[D <: AnyData]: AnyApp1At[defaultS3LocationForTask[T], D] { type Y = D := S3Resource } =
+case object defaultS3LocationForTask {
+
+  implicit def defApp[T <: AnyTask, D <: AnyData](implicit task: T)
+  : AnyApp1At[defaultS3LocationForTask[T], D] { type Y = D := S3Resource } =
     App1 { d: D => d := S3Resource(task.s3Output / d.label) }
 }
 

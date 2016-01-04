@@ -15,7 +15,7 @@ case object example {
 
   case object buh extends era7.projects.Project("buh")
 
-  case object doSomething extends Task(buh)(x :×: |[AnyData])(x :×: |[AnyData])(LocalDate.of(2016,3,2))
+  // case object doSomething extends Task(buh)(x :×: |[AnyData])(x :×: |[AnyData])(LocalDate.of(2016,3,2))
 }
 
 class DefaultLocationsTest extends FunSuite {
