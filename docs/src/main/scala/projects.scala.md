@@ -3,8 +3,10 @@
 package era7.projects
 
 import java.net.URL
+import java.time._
 import ohnosequences.awstools.s3._
 import ohnosequences.datasets._
+import ohnosequences.cosas._, types._, klists._, records._, fns._
 ```
 
 
@@ -56,6 +58,7 @@ The S3 namespaces for the project and its input and output.
   lazy val s3Input  : S3Folder = s3 / "data" / "in"  /
   lazy val s3Output : S3Folder = s3 / "data" / "out" /
 
+
   // TODO one role per project, created when initialized
   // lazy val role: Role = projects
 }
@@ -69,13 +72,17 @@ A task is part of a project, and has as input and output a set of data.
 
 
 ```scala
-trait AnyTask {
+trait AnyTask extends AnyType {
+
+  type Raw = AnyTaskState :: List[Input#Raw] :: List[Output#Raw] :: *[Any]
 
   type Project <: AnyProject
   val project: Project
 
   val name: String
-  lazy val fullName: String   = s"${project.name}.${name}"
+  lazy val fullName : String  = s"${project.name}.${name}"
+  lazy val label    : String  = fullName
+
   lazy val s3Output: S3Folder = project.s3Output / name /
 ```
 
@@ -102,24 +109,120 @@ This is a depfn which when applied on data: `task.defaultS3Location(d)` yields t
 
 ```scala
   case object defaultS3Location extends defaultS3LocationForTask(this)
+```
+
+the returned depfn will let you add a qualifier after the standard output path for this task. See the tests for an example of its use
+
+```scala
+  def defaultLocationWithQualifier(qual: String): insertAfter = insertAfter(s3Output.key, qual)
+
+  def defaultOutputS3Location[
+    O <: Output#Raw
+  ](implicit
+    mapper: AnyApp2At[
+      mapKList[defaultS3Location.type, AnyDenotation { type Value = S3Resource }],
+      defaultS3Location.type,
+      Output#Keys#Types
+    ] { type Y = O }
+  )
+  : O =
+    mapper(defaultS3Location, output.keys.types)
+
+  val deadline: LocalDate
 }
+
+// abstract class Task[P <: AnyProject](val project: P)(val deadline: LocalDate) extends AnyTask {
+//
+//   type Project = P
+//
+//   lazy val name: String = toString
+// }
+
 ```
 
 
-This is a helper constructor for doing `case object doSometing extends Task(project)(name)`
+This is a helper constructor for doing  something like
+
+``` scala
+case object doSomething extends Task(project)(input)(output)(date)`
+```
 
 
 ```scala
-abstract class Task[P <: AnyProject](val project: P)(val name: String) extends AnyTask {
+class Task[
+  P <: AnyProject,
+  I <: AnyProductType { type Types <: AnyKList.Of[AnyData] },
+  O <: AnyProductType { type Types <: AnyKList.Of[AnyData] }
+](
+  val project: P
+)(
+  val inputData: I
+)(
+  val outputData: O
+)(
+  val deadline: LocalDate
+)(
+  implicit
+    proof1: noDuplicates isTrueOn I#Types,
+    proof2: noDuplicates isTrueOn O#Types
+)
+extends AnyTask {
 
   type Project = P
+
+  type Input = DataSet[I]
+  lazy val input: Input = new DataSet(inputData) {}
+
+  type Output = DataSet[O]
+  lazy val output: Output = new DataSet(outputData) {}
+
+  lazy val name: String = toString
 }
+
+
+sealed trait AnyTaskState
+
+case object Specified extends AnyTaskState {
+
+  def start   : Started.type    = Started
+  def cancel  : Cancelled.type  = Cancelled
+  def expire  : Expired.type    = Expired
+}
+// TODO assigned? to someone?
+case object Started   extends AnyTaskState {
+
+  def fail      : Failed.type     = Failed
+  def expire    : Expired.type    = Expired
+  def review    : InReview.type   = InReview
+  // TODO without review? kinda weird
+  def complete  : Completed.type  = Completed
+}
+case object Failed    extends AnyTaskState
+case object Cancelled extends AnyTaskState
+case object Expired   extends AnyTaskState
+case object InReview  extends AnyTaskState {
+
+  def complete: Completed.type = Completed
+}
+case object Completed extends AnyTaskState
+
+abstract class ProjectTasks[P <: AnyProject, Ks <: AnyProductType { type Types <: AnyKList { type Bound <: AnyTask } }](
+  val project: P
+)
+(
+  val tasks: Ks
+)(implicit
+  noDuplicates: noDuplicates isTrueOn Ks#Types
+)
+extends RecordType(tasks)
 
 ```
 
 
 
 
-[test/scala/DefaultLocationsTests.scala]: ../../test/scala/DefaultLocationsTests.scala.md
-[main/scala/projects.scala]: projects.scala.md
 [main/scala/defaultLocations.scala]: defaultLocations.scala.md
+[main/scala/package.scala]: package.scala.md
+[main/scala/projects.scala]: projects.scala.md
+[test/scala/DefaultLocationsTests.scala]: ../../test/scala/DefaultLocationsTests.scala.md
+[test/scala/exampleProject.scala]: ../../test/scala/exampleProject.scala.md
