@@ -10,15 +10,15 @@ import ohnosequences.cosas._, records._, types._, klists._
 case object preparePaella extends era7.projects.Project("prepare_paella")
 
 case object preparePaellaTasks extends ProjectTasks(preparePaella)(
-  buyRice     :?:
-  buySeafood  :?: |[AnyTask]
+  buyRice     :×:
+  buySeafood  :×: |[AnyTask]
 )
 
 case object rice    extends Data("La Fallera")
 case object seafood extends Data("Preparado de Paella Pescanova")
 
-case object buyRice extends Task(preparePaella)(noData)(rice :?: |[AnyData])(LocalDate.of(2016,3,2))
-case object buySeafood extends Task(preparePaella)(noData)(seafood :?: |[AnyData])(LocalDate.of(2016,3,2))
+case object buyRice extends Task(preparePaella)(noData)(rice :×: |[AnyData])(LocalDate.of(2016,3,2))
+case object buySeafood extends Task(preparePaella)(noData)(seafood :×: |[AnyData])(LocalDate.of(2016,3,2))
 
 case object projectState {
 
@@ -46,8 +46,8 @@ abstract class GenericTasksTests[
 
 class buh extends GenericTasksTests[
   preparePaella.type,
-  buyRice.type     :?:
-  buySeafood.type  :?: |[AnyTask],
+  buyRice.type     :×:
+  buySeafood.type  :×: |[AnyTask],
   preparePaellaTasks.type
 ](preparePaellaTasks)
 
