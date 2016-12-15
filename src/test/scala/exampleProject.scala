@@ -1,11 +1,11 @@
-package era7.projects.test
+package era7bio.projects.test
 
 import java.time._
-import era7.projects._
+import era7bio.projects._
 import ohnosequences.datasets._
 import ohnosequences.cosas._, records._, types._, klists._
 
-case object preparePaella extends era7.projects.Project("prepare_paella")
+case object preparePaella extends era7bio.projects.Project("prepare_paella")
 
 case object preparePaellaTasks extends ProjectTasks(preparePaella)(
   buyRice     :×:

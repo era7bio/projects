@@ -1,4 +1,4 @@
-package era7
+package era7bio
 
 import ohnosequences.cosas.types._
 import ohnosequences.datasets._

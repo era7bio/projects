@@ -1,4 +1,4 @@
-package era7.projects
+package era7bio.projects
 
 import ohnosequences.datasets._
 import ohnosequences.cosas._, types._, fns._, klists._

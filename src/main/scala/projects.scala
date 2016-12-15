@@ -1,4 +1,4 @@
-package era7.projects
+package era7bio.projects
 
 import java.net.URL
 import java.time._
@@ -39,7 +39,7 @@ trait AnyProject {
 
     The S3 namespaces for the project and its input and output.
   */
-  lazy val s3       : S3Folder = S3Folder(era7.projects.s3.bucket, name)
+  lazy val s3       : S3Folder = S3Folder(era7bio.projects.s3.bucket, name)
   lazy val s3Input  : S3Folder = s3 / "data" / "in"  /
   lazy val s3Output : S3Folder = s3 / "data" / "out" /
 
