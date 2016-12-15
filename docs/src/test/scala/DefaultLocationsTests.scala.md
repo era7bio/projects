@@ -1,6 +1,6 @@
 
 ```scala
-package era7.projects.test
+package era7bio.projects.test
 
 import java.time._
 
@@ -8,14 +8,14 @@ import org.scalatest.FunSuite
 
 import ohnosequences.datasets._
 import ohnosequences.cosas._, types._, klists._
-import era7.projects._
+import era7bio.projects._
 
 case object example {
 
   case class Sample(id: String)
   case object x extends FileData("x")("txt")
 
-  case object buh extends era7.projects.Project("buh")
+  case object buh extends era7bio.projects.Project("buh")
 
   case object doSomething extends Task(buh)(x :×: |[AnyData])(x :×: |[AnyData])(LocalDate.of(2016,3,2))
 }
