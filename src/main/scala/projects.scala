@@ -75,7 +75,9 @@ trait AnyTask extends AnyType {
   type Input <: AnyDataSet
   val input: Input
 
-  type Output <: AnyDataSet
+  // FIXME: this is supposed to be the same:
+  // type Output <: AnyDataSet // = AnyRecordType.Of[AnyData]
+  type Output <: AnyRecordType { type Keys <: AnyProductType { type Types <: AnyKList { type Bound <: AnyData } } }
   val output: Output
 
   // NOTE in a future better world we could use this
